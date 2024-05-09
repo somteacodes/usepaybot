@@ -1,0 +1,52 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               Int                @id @default(autoincrement())
+  username         String             @unique
+  letter           String?            @db.VarChar(255)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  SenderTransactionMatch TransactionMatch[] @relation("sender")
+  SenderVoucherMatch     VoucherMatch[]     @relation("voucherSender")
+  ReceiverTransactionMatch TransactionMatch[] @relation("receiver")
+  ReceiverVoucherMatch     VoucherMatch[]    @relation("voucherReceiver")
+}
+
+model Task {
+  id          Int     @id @default(autoincrement())
+  instruction String? @db.LongText()
+  task        Int
+}
+
+model TransactionMatch {
+  id         Int     @id @default(autoincrement())
+  matched    Boolean @default(false)
+  sender     User?   @relation(fields: [senderId], references: [id], name: "sender")
+  senderId   Int?
+  receiver   User?   @relation(fields: [receiverId], references: [id], name: "receiver")
+  receiverId Int?
+  wallet     String?
+}
+
+model VoucherMatch {
+  id         Int     @id @default(autoincrement())
+  matched    Boolean @default(false)
+  sender     User?   @relation(fields: [senderId], references: [id], name: "voucherSender")
+  senderId   Int?
+  receiver   User?   @relation(fields: [receiverId], references: [id], name: "voucherReceiver")
+  receiverId Int?
+  voucher    String?
+}
